@@ -1,0 +1,11 @@
+.env
+node_modules/
+cache/
+.gradle/
+build/
+local.properties
+.idea/
+*.iml
+.kotlin/
+skarmbilder/
+docs/data.json

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scroll"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            style="@style/Rubrik"
+            android:layout_marginTop="0dp"
+            android:text="Tjänster" />
+
+        <!-- Fylls med kryssrutor från koden. -->
+        <GridLayout
+            android:id="@+id/services"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="3" />
+
+        <TextView
+            style="@style/Rubrik"
+            android:text="Genre" />
+
+        <GridLayout
+            android:id="@+id/genres"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="2" />
+
+        <RadioGroup
+            android:id="@+id/type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/movies"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Filmer" />
+
+            <RadioButton
+                android:id="@+id/series"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Serier" />
+        </RadioGroup>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <CheckBox
+                android:id="@+id/hideSeen"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Dölj sedda" />
+
+            <CheckBox
+                android:id="@+id/showHidden"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Visa dolda" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textSize="13sp" />
+
+        <!-- Fylls med topplistan från koden. -->
+        <LinearLayout
+            android:id="@+id/list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <!-- Källor som TMDB och IMDb kräver att vi visar. -->
+        <ImageView
+            android:id="@+id/tmdbLogo"
+            android:layout_width="wrap_content"
+            android:layout_height="16dp"
+            android:layout_marginTop="32dp"
+            android:adjustViewBounds="true"
+            android:contentDescription="TMDB"
+            android:src="@drawable/tmdb_logo" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:alpha="0.7"
+            android:text="This product uses the TMDB API but is not endorsed or certified by TMDB.\nStreamingdata från JustWatch · Betyg från IMDb"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/version"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:alpha="0.7"
+            android:textSize="12sp" />
+    </LinearLayout>
+</ScrollView>

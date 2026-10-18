@@ -1,0 +1,52 @@
+# Hämtar nya filmer, serier och betyg varje natt och publicerar data.json
+# på GitHub Pages. Kan också startas för hand under fliken Actions.
+name: Uppdatera filmlistan
+
+on:
+  schedule:
+    - cron: "17 3 * * *" # 03:17 UTC = 04:17/05:17 svensk tid
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  uppdatera:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      # IMDb-id sparas mellan körningarna så att bara nya titlar slås upp.
+      - uses: actions/cache@v4
+        with:
+          path: cache
+          key: imdb-id-${{ github.run_id }}
+          restore-keys: imdb-id-
+
+      - name: Hämta data
+        run: node scripts/uppdatera.mjs
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: docs
+
+      - id: deploy
+        uses: actions/deploy-pages@v4
