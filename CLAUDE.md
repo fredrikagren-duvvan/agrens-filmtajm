@@ -152,6 +152,13 @@ icke-kommersiellt. Längst ner i listan (eller en "Om"-ruta) måste stå:
 - "Streamingdata från JustWatch"
 - "Betyg från IMDb"
 
+## Släppta versioner
+
+- 1.0 (versionCode 1), 2026-10-18: första publicerade versionen, installerad
+  på Fredriks telefon.
+  Direktlänk: https://github.com/fredrikagren-duvvan/agrens-filmtajm-releases/releases/download/v1.0/AgrensFilmtajm-1.0.apk
+  Själva uppdateringsflödet på telefonen är otestat tills 1.1 släpps.
+
 ## Självuppdatering och publicering
 
 Samma upplägg som Nästa tunnelbana (`Updater.kt` + `InstallReceiver` är
@@ -218,4 +225,4 @@ kopierade därifrån, utan widgetdelarna).
   körningen (tom cache, 14 180 IMDb-uppslag) tog ca 10 min och gav 9 825
   titlar. Appen i emulatorn hämtade data.json från Pages själv.
 - 2026-10-18: Steg 5 – självuppdatering och `publicera.ps1` klara och testade
-  i emulatorn. Väntar på att Fredrik bygger 1.0 signerad och publicerar.
+  i emulatorn. 1.0 publicerad och installerad – alla fem byggstegen klara.
