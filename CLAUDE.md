@@ -72,7 +72,20 @@ Android-appen (Kotlin, inga beroenden)
 - **TMDB-nyckeln** ligger bara som hemlighet `TMDB_API_KEY` i GitHub och
   lokalt i `.env` (står i `.gitignore`). Den får aldrig hamna i koden, i
   `data.json` eller i appen.
-- IMDb-id och engelsk titel cachas i `cache/imdb-id.json`.
+- IMDb-id och engelsk titel cachas i `cache/imdb-id.json` (i Actions via
+  `actions/cache`, nyckel `imdb-id-<run_id>` med restore-key `imdb-id-`).
+
+### GitHub
+
+- Förråd (offentligt, krävs för gratis Pages):
+  https://github.com/fredrikagren-duvvan/agrens-filmtajm
+- Hemlighet `TMDB_API_KEY` satt med `gh secret set` från `.env`.
+- `.github/workflows/uppdatera.yml`: varje natt 03:17 UTC + manuellt
+  ("Run workflow" under Actions, eller `gh workflow run uppdatera.yml`).
+- **Pages publiceras från Actions** (build_type=workflow), inte från en gren:
+  mappen `docs/` laddas upp som artefakt. `docs/data.json` checkas alltså
+  aldrig in (står i `.gitignore`) – förrådet växer inte för varje natt.
+- Data: https://fredrikagren-duvvan.github.io/agrens-filmtajm/data.json
 
 ### data.json (kompakt)
 
@@ -174,4 +187,7 @@ icke-kommersiellt. Längst ner i listan (eller en "Om"-ruta) måste stå:
   (i Git Bash: `MSYS_NO_PATHCONV=1`). Data äldre än 6 h hämtas om.
 - Debugbygget läser data.json på ca 5 s i emulatorn, ett icke-debugbart bygge
   på 0,3 s – det är debugläget, inte koden. data.json läses med `JsonReader`.
-  Väntar på Fredriks OK för steg 4.
+- 2026-10-18: Steg 4 klart – förråd, hemlighet, Pages och Actions. Första
+  körningen (tom cache, 14 180 IMDb-uppslag) tog ca 10 min och gav 9 825
+  titlar. Appen i emulatorn hämtade data.json från Pages själv.
+  Nästa: steg 5 (signerad release, självuppdatering, Fredriks telefon).
