@@ -9,3 +9,4 @@ local.properties
 .kotlin/
 skarmbilder/
 docs/data.json
+app/release/

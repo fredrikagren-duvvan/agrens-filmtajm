@@ -152,6 +152,33 @@ icke-kommersiellt. Längst ner i listan (eller en "Om"-ruta) måste stå:
 - "Streamingdata från JustWatch"
 - "Betyg från IMDb"
 
+## Självuppdatering och publicering
+
+Samma upplägg som Nästa tunnelbana (`Updater.kt` + `InstallReceiver` är
+kopierade därifrån, utan widgetdelarna).
+
+- Appen läser `https://github.com/fredrikagren-duvvan/agrens-filmtajm-releases/releases/latest/download/version.json`
+  när den visas (högst var 10:e min) och via "Sök efter uppdatering" längst
+  ner. Debugbyggen letar inte efter uppdateringar.
+- Installationsfilerna ligger i ett eget förråd, `agrens-filmtajm-releases`
+  (skapas av `publicera.ps1` första gången), inte i kodförrådet.
+- **Publicera:** höj `versionCode`/`versionName` i `app/build.gradle.kts`,
+  bygg signerad release-APK i Android Studio (Build → Generate Signed App
+  Bundle or APK → APK → release), kör sedan i ett vanligt PowerShell-fönster
+  från projektmappen:
+  `powershell -ExecutionPolicy Bypass -File .publicera.ps1 -Nyheter "…"`.
+  Skriptet tar den nyaste av `appeleaseapp-release.apk` och
+  `appuildoutputsapkeleaseapp-release.apk`, kontrollerar paket och
+  signatur och sparar en kopia i `C:UsersFredrAgrensFilmtajm-installationsfiler`.
+- Release-nyckel: samma som EsterNotes
+  (`C:UsersFredrEsterNotes-nyckelesternotes-release.jks`, alias `esternotes`).
+  Lösenordet har bara Fredrik – fråga aldrig efter det.
+- Testläge i debugbyggen: lägg en apk i `cache/updates/test.apk` (via
+  `run-as`) och starta MainActivity med action `se.minapp.filmtajm.TEST_INSTALL`.
+  Testat 2026-10-18: 1.0 → 1.1-test fungerade (efter "Install anyway" i Play
+  Protect – More details → Install anyway).
+- Debug- och releaseversionen kan inte ligga på samma telefon samtidigt.
+
 ## Miljö
 
 - Projektmapp: `C:\Users\Fredr\Projekt\AgrensFilmtajm`.
@@ -190,4 +217,5 @@ icke-kommersiellt. Längst ner i listan (eller en "Om"-ruta) måste stå:
 - 2026-10-18: Steg 4 klart – förråd, hemlighet, Pages och Actions. Första
   körningen (tom cache, 14 180 IMDb-uppslag) tog ca 10 min och gav 9 825
   titlar. Appen i emulatorn hämtade data.json från Pages själv.
-  Nästa: steg 5 (signerad release, självuppdatering, Fredriks telefon).
+- 2026-10-18: Steg 5 – självuppdatering och `publicera.ps1` klara och testade
+  i emulatorn. Väntar på att Fredrik bygger 1.0 signerad och publicerar.

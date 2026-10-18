@@ -1,6 +1,7 @@
 package se.minapp.filmtajm
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
@@ -79,13 +80,119 @@ class MainActivity : Activity() {
             box.setOnCheckedChangeListener { _, _ -> onChoicesChanged() }
         }
 
-        findViewById<TextView>(R.id.version).text =
-            "Version ${packageManager.getPackageInfo(packageName, 0).versionName}"
+        findViewById<TextView>(R.id.version).text = "Version ${Updater.currentVersionName(this)}"
+        findViewById<Button>(R.id.btnUpdate).setOnClickListener { checkForUpdate(manual = true) }
+        handleTestInstall(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleTestInstall(intent)
     }
 
     override fun onResume() {
         super.onResume()
         load()
+
+        // Tillbaka från inställningen "Tillåt från den här källan"?
+        val waiting = updateWaitingForPermission
+        if (waiting != null && Updater.canInstall(this)) {
+            updateWaitingForPermission = null
+            startInstall(waiting)
+        } else if (System.currentTimeMillis() - lastAutoCheck > AUTO_CHECK_INTERVAL) {
+            // Varje gång appen visas (men högst var tionde minut).
+            lastAutoCheck = System.currentTimeMillis()
+            checkForUpdate(manual = false)
+        }
+    }
+
+    // --- Självuppdatering (samma som i Nästa tunnelbana) ---
+
+    private var updateWaitingForPermission: AppUpdate? = null
+    private var updateDialog: AlertDialog? = null
+
+    private fun checkForUpdate(manual: Boolean) {
+        if (Updater.isDebugBuild(this)) {
+            if (manual) message("Utvecklingsversionen", "Versionen från Android Studio letar inte efter uppdateringar.")
+            return
+        }
+        thread {
+            val result = runCatching { Updater.check(this) }
+            runOnUiThread {
+                if (isFinishing) return@runOnUiThread
+                val update = result.getOrNull()
+                when {
+                    update != null -> showUpdate(update)
+                    result.isFailure && manual -> message("Det gick inte", "Kunde inte leta efter uppdatering. Är du ansluten till internet?")
+                    manual -> message("Inga uppdateringar", "Du har den senaste versionen.")
+                }
+            }
+        }
+    }
+
+    private fun showUpdate(update: AppUpdate) {
+        if (updateDialog?.isShowing == true) return
+        val notes = if (update.notes.isBlank()) "" else "\n\nNyheter:\n${update.notes}"
+        updateDialog = AlertDialog.Builder(this)
+            .setTitle("Ny version av Agréns filmtajm!")
+            .setMessage("Version ${update.versionName} finns. Du har ${Updater.currentVersionName(this)}.$notes")
+            .setPositiveButton("Installera") { _, _ -> startInstall(update) }
+            .setNegativeButton("Senare", null)
+            .show()
+    }
+
+    private fun startInstall(update: AppUpdate) {
+        if (!Updater.canInstall(this)) {
+            updateWaitingForPermission = update
+            AlertDialog.Builder(this)
+                .setTitle("Ett sista steg")
+                .setMessage(
+                    "Android behöver ditt lov för att appen ska få installera sina egna uppdateringar. " +
+                        "Det behövs bara första gången.\n\n" +
+                        "1. Tryck på \"Öppna inställningar\".\n" +
+                        "2. Slå på \"Tillåt från den här källan\".\n" +
+                        "3. Gå tillbaka hit, så fortsätter uppdateringen.",
+                )
+                .setPositiveButton("Öppna inställningar") { _, _ -> startActivity(Updater.installPermissionIntent(this)) }
+                .setNegativeButton("Avbryt") { _, _ -> updateWaitingForPermission = null }
+                .show()
+            return
+        }
+
+        val progress = AlertDialog.Builder(this)
+            .setTitle("Hämtar version ${update.versionName}…")
+            .setMessage("0 %")
+            .setCancelable(false)
+            .show()
+        thread {
+            try {
+                val apk = Updater.download(this, update) { part ->
+                    runOnUiThread { progress.setMessage("${(part * 100).toInt()} %") }
+                }
+                Updater.install(this, apk)
+                runOnUiThread { progress.dismiss() }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    progress.dismiss()
+                    message("Det gick inte", e.message ?: "Uppdateringen kunde inte hämtas.")
+                }
+            }
+        }
+    }
+
+    /**
+     * Bara för test i utvecklingsversionen: installerar filen updates/test.apk
+     * i appens cache, så att installationsflödet kan provas utan att publicera.
+     */
+    private fun handleTestInstall(intent: Intent?) {
+        if (intent?.action != ACTION_TEST_INSTALL || !Updater.isDebugBuild(this)) return
+        val apk = File(cacheDir, "updates/test.apk")
+        if (!apk.exists()) return message("Test", "Hittar ingen ${apk.path}")
+        thread { Updater.install(this, apk) }
+    }
+
+    private fun message(title: String, text: String) {
+        AlertDialog.Builder(this).setTitle(title).setMessage(text).setPositiveButton("OK", null).show()
     }
 
     /** Läser sparad data och hämtar ny om den är gammal (eller saknas). */
@@ -266,4 +373,12 @@ class MainActivity : Activity() {
     }
 
     private fun dp(value: Int) = (value * resources.displayMetrics.density).toInt()
+
+    companion object {
+        private const val ACTION_TEST_INSTALL = "se.minapp.filmtajm.TEST_INSTALL"
+
+        /** Kolla efter uppdatering högst så här ofta när appen visas. */
+        private const val AUTO_CHECK_INTERVAL = 10 * 60_000L
+        private var lastAutoCheck = 0L
+    }
 }
